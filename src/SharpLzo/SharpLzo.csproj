@@ -1,0 +1,64 @@
+﻿<Project Sdk="Microsoft.NET.Sdk" InitialTargets="SetVersion">
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net5.0</TargetFrameworks>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>9.0</LangVersion>
+
+    <Authors>wtfblub</Authors>
+    <PackageId>SharpLzo</PackageId>
+    <PackageLicenseExpression>GPL-2.0-only</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/wtfblub/SharpLzo</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <Description>A very simple wrapper around the lzo C library by Markus F.X.J. Oberhumer.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="GitInfo" Version="2.0.10" PrivateAssets="All" />
+    <PackageReference Include="SharpLzo.Native" Version="2.10.0" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <PackageReference Include="System.Memory" Version="4.5.4" />
+  </ItemGroup>
+  <Target Name="_ReadVersionCache" Condition="Exists('$(IntermediateOutputPath)GitInfo.cache') and $(DummyGitVersion) == true">
+    <PropertyGroup>
+      <_RawCachedInfo>$([System.IO.File]::ReadAllText('$(IntermediateOutputPath)GitInfo.cache'))</_RawCachedInfo>
+    </PropertyGroup>
+    <CreateItem Include="_CachedInfo" AdditionalMetadata="$(_RawCachedInfo.Split(';'))">
+      <Output TaskParameter="Include" ItemName="_CachedInfo" />
+    </CreateItem>
+    <PropertyGroup>
+      <GitBranch>%(_CachedInfo.GitBranch)</GitBranch>
+      <GitCommit>%(_CachedInfo.GitCommit)</GitCommit>
+      <GitSha>%(_CachedInfo.GitSha)</GitSha>
+      <GitBaseVersion>%(_CachedInfo.GitBaseVersion)</GitBaseVersion>
+      <GitBaseVersionSource>%(_CachedInfo.GitBaseVersionSource)</GitBaseVersionSource>
+      <GitBaseVersionMajor>%(_CachedInfo.GitBaseVersionMajor)</GitBaseVersionMajor>
+      <GitBaseVersionMinor>%(_CachedInfo.GitBaseVersionMinor)</GitBaseVersionMinor>
+      <GitBaseVersionPatch>%(_CachedInfo.GitBaseVersionPatch)</GitBaseVersionPatch>
+      <GitCommits>%(_CachedInfo.GitCommits)</GitCommits>
+      <GitTag>%(_CachedInfo.GitTag)</GitTag>
+      <GitBaseTag>%(_CachedInfo.GitBaseTag)</GitBaseTag>
+      <GitSemVerMajor>%(_CachedInfo.GitSemVerMajor)</GitSemVerMajor>
+      <GitSemVerMinor>%(_CachedInfo.GitSemVerMinor)</GitSemVerMinor>
+      <GitSemVerPatch>%(_CachedInfo.GitSemVerPatch)</GitSemVerPatch>
+      <GitSemVerLabel>%(_CachedInfo.GitSemVerLabel)</GitSemVerLabel>
+      <GitSemVerDashLabel>%(_CachedInfo.GitSemVerDashLabel)</GitSemVerDashLabel>
+      <GitSemVerSource>%(_CachedInfo.GitSemVerSource)</GitSemVerSource>
+    </PropertyGroup>
+  </Target>
+  <Target Name="GitVersion">
+    <PropertyGroup>
+      <DummyGitVersion>true</DummyGitVersion>
+      <GitBaseVersionMajor Condition="'$(GitBaseVersionMajor)' == ''">0</GitBaseVersionMajor>
+      <GitBaseVersionMinor Condition="'$(GitBaseVersionMinor)' == ''">1</GitBaseVersionMinor>
+      <GitBaseVersionPatch Condition="'$(GitBaseVersionPatch)' == ''">0</GitBaseVersionPatch>
+    </PropertyGroup>
+  </Target>
+  <Target Name="SetVersion" DependsOnTargets="GitVersion;_ReadVersionCache">
+    <PropertyGroup>
+      <AssemblyVersion>$(GitBaseVersionMajor).$(GitBaseVersionMinor).$(GitBaseVersionPatch)</AssemblyVersion>
+      <FileVersion>$(GitBaseVersionMajor).$(GitBaseVersionMinor).$(GitBaseVersionPatch)</FileVersion>
+      <Version>$(GitBaseVersionMajor).$(GitBaseVersionMinor).$(GitBaseVersionPatch)-$(GitCommit)</Version>
+      <PackageVersion>$(GitBaseVersionMajor).$(GitBaseVersionMinor).$(GitBaseVersionPatch)</PackageVersion>
+    </PropertyGroup>
+  </Target>
+</Project>
